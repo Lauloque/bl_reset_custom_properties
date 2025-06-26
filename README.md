@@ -7,7 +7,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/Lauloque/bl_reset_custom_properties?style=for-the-badge&labelColor=rgb(63,64,64))](https://github.com/Lauloque/bl_reset_custom_properties/blob/master/LICENSE) ![Minimum Supported Blender Version](https://img.shields.io/badge/Blender-4.2LTS+-green?style=for-the-badge&logo=blender&logoColor=white&labelColor=rgb(64,64,64)) [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H818FHX)
 
-A Blender extension that provides operators to reset custom properties to their default values on objects and pose bones. Compatible with Blender 4.2 and up.
+Similar to how Blender lets us reset or clear translation, rotation and scale, this Blender extension provides operators to reset custom properties to their default values on objects and pose bones. Compatible with Blender 4.2 and up.
 
 Adds convenient menu items in Object and Pose modes for quick property management.
 
@@ -15,6 +15,8 @@ Menu _Object_ &rang; _Clear_ &rang; _Custom Properties_:
 ![menu object](Prez/menu_object.webp)
 
 Menu _Pose_ &rang; _Reset Custom Properties_:  
+    - Selected Bones  
+    - All Bones  
 ![menu object](Prez/menu_pose.webp)
 
 ## Installation
