@@ -11,13 +11,13 @@ Similar to how Blender lets us reset or clear translation, rotation and scale, t
 
 Adds convenient menu items in Object and Pose modes for quick property management.
 
-- Menu _Object_ &rang; _Clear_ &rang; _Custom Properties_:  
+- Menu _Object_ &rang; _Clear_ &rang; _Custom Properties_  
     ![menu object](Prez/menu_object.webp)
 
-- Menu _Pose_ &rang; _Reset Custom Properties_:  
+- Menu _Pose_ &rang; _Reset Custom Properties_ &rang;  
     - Selected Bones  
     - All Bones  
-    ![menu object](Prez/menu_pose.webp)
+  ![menu object](Prez/menu_pose.webp)
 
 ## Installation
 
