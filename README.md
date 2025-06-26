@@ -1,6 +1,6 @@
 <h1 tabindex="-1" class="heading-element" dir="auto">
-    <a target="_blank" rel="noopener noreferrer" href="Prez/icon.webp">
-        <img src="Prez/icon.webp" alt="icon" style="height: 1em; vertical-align: middle;">
+    <a target="_blank" rel="noopener noreferrer" href="Prez/icon.png">
+        <img src="Prez/icon.png" alt="icon" style="height: 1em; vertical-align: middle;">
     </a>
     Reset Custom Properties
 </h1>
