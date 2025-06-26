@@ -1,5 +1,6 @@
 schema_version = "1.0.0"
 id = "bl_reset_custom_properties"
+version = "1.0.0"
 name = "Reset Custom Properties"
 tagline = "Reset custom properties to their default values"
 maintainer = "Loïc \"Lauloque\" Dautry"
@@ -7,7 +8,7 @@ type = "add-on"
 website = "https://github.com/Lauloque/bl_reset_custom_properties"
 # Optional list defined by Blender and server, see:
 # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
-tags = ["Animation", "Rigging", "Object", "Properties"]
+tags = ["Object"]
 blender_version_min = "4.2.0"
 # blender_version_max = "5.1.0"
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
@@ -51,4 +52,6 @@ paths_exclude_pattern = [
   ".git/",
   ".gitignore",
   "README.md",
+  "*.zip",
+  "*.blend*"
 ]
