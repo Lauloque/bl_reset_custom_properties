@@ -184,7 +184,7 @@ def draw_menu_object(self, context):
         layout = self.layout
         layout.operator(
             "reset.custom_properties",
-            text = "Reset Custom Properties",
+            text = "Custom Properties",
             icon = 'RECOVER_LAST'
         )
 
