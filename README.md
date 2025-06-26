@@ -11,6 +11,12 @@ A Blender extension that provides operators to reset custom properties to their 
 
 Adds convenient menu items in Object and Pose modes for quick property management.
 
+Menu _Object_ &rang; _Clear_ &rang; _Custom Properties_:  
+![menu object](Prez/menu_object.webp)
+
+Menu _Pose_ &rang; _Reset Custom Properties_:  
+![menu object](Prez/menu_pose.webp)
+
 ## Installation
 
 You can download the extension either from:
