@@ -13,17 +13,21 @@ class ResetCustomPropertiesAddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
     
     developer_print: bpy.props.BoolProperty(
-        name="Enable Developer Prints in System Console",
+        name="Enable Developer Log in System Console",
         description=(
-            "Menu Windows > Toggle. Helps with debugging issues in "
-            "the addon."
+            "Helps with debugging issues in the addon.\n"
+            "Please use this for any bug report.\n"
+            "Keep it disabled for better performances."
         ),
         default=False
     )
     
     def draw(self, context):
         layout = self.layout
-        layout.prop(self, "developer_print")
+        split = layout.split(factor=0.6)
+        row = layout.row()
+        row.prop(self, "developer_print")
+        row.operator("wm.console_toggle", icon="CONSOLE", text="")
 
 
 class RESET_OT_custom_properties(bpy.types.Operator):
