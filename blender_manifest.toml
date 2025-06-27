@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "bl_reset_custom_properties"
-version = "1.0.0"
+version = "1.0.1"
 name = "Reset Custom Properties"
 tagline = "Reset custom properties to their default values"
 maintainer = "Loïc \"Lauloque\" Dautry"
