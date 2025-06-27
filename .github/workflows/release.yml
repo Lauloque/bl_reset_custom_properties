@@ -2,8 +2,8 @@ name: Release Obsidian plugin
 
 on:
   push:
-    tags:
-      - "*"
+    paths:
+      - "Releases/*.zip"
   workflow_dispatch:
 
 jobs:
@@ -13,32 +13,58 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-
-      - name: Use Node.js
-        uses: actions/setup-node@v3
         with:
-          node-version: "18.x"
+          fetch-depth: 0
 
-      - name: Build plugin
+      - name: Get new zip file and extract version
+        id: version
         run: |
-          npm install
-          npm run build
+          new_files=$(git diff --name-only --diff-filter=A HEAD~1 HEAD | grep "^Releases/.*\.zip$" || true)
+          if [[ -z "$new_files" ]]; then
+            echo "No new zip files added, exiting"
+            exit 0
+          fi
+          
+          zip_file=$(echo "$new_files" | head -n1)
+          filename=$(basename "$zip_file")
+          version=$(echo "$filename" | sed 's/bl_reset_custom_properties-\(.*\)\.zip/\1/')
+          
+          echo "tag=${version}" >> $GITHUB_OUTPUT
+          echo "zip_file=${zip_file}" >> $GITHUB_OUTPUT
+          echo "Found new zip: $zip_file, version: $version"
 
-      - name: Create release archive
+      - name: Create tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir keyboard-formatter
-          cp main.js keyboard-formatter/
-          cp manifest.json keyboard-formatter/
-          zip -r release.zip keyboard-formatter/
-          ls -l release.zip
+          tag="${{ steps.version.outputs.tag }}"
+          
+          if git rev-parse --verify "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists"
+          else
+            echo "Creating tag ${tag}"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "${tag}" -m "Release ${tag}"
+            git push origin "${tag}"
+          fi
 
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag="${GITHUB_REF#refs/tags/}"
-
+          tag="${{ steps.version.outputs.tag }}"
+          zip_file="${{ steps.version.outputs.zip_file }}"
+          
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, skipping"
+            exit 0
+          fi
+          
           gh release create "$tag" \
-            --title="$tag" \
+            --title="Release $tag" \
             --draft \
-            main.js manifest.json release.zip
+            --generate-notes \
+            "$zip_file"
+          
+          echo "Created draft release: $tag"
