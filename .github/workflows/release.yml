@@ -1,4 +1,4 @@
-name: Release Obsidian plugin
+name: Draft a new Release on zip push
 
 on:
   push:
