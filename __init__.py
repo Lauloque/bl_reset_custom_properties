@@ -222,11 +222,3 @@ def unregister():
     bpy.types.VIEW3D_MT_pose.remove(draw_menu_pose)
     
     unregister_classes()
-
-
-if __name__ == "__main__":
-    try:
-        unregister()
-    except:
-        pass
-    register()
