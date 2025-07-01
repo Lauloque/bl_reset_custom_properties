@@ -53,5 +53,9 @@ paths_exclude_pattern = [
   ".gitignore",
   "README.md",
   "*.zip",
-  "*.blend*"
+  "*.blend*",
+  "LICENSE",
+  "*.bat",
+  "Prez/",
+  ".github/"
 ]
