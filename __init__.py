@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import bpy
 from bpy.utils import register_classes_factory
-from typing import Set
 
 
 def dprint(message: str):
@@ -89,7 +88,7 @@ class RESET_OT_custom_properties(bpy.types.Operator):
         dprint(f"Total user properties found: {len(props)}")
         return props
 
-    def execute(self, context) -> Set[str]:
+    def execute(self, context):
         """Main execution"""
         reset_props_count = 0
 
