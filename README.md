@@ -25,7 +25,7 @@ Adds convenient menu items in Object and Pose modes for quick property managemen
 You can download the extension either from:
 
 - Blender's GUI (Preferences > Get Extensions)
-- The [Blender Extension Platform](https://extensions.blender.org/add-ons/reset_custom_properties/) (to be published!)
+- The [Blender Extension Platform](https://extensions.blender.org/add-ons/bl-reset-custom-properties/)
 - [This repository's releases page](https://github.com/Lauloque/bl_reset_custom_properties/releases).
 
 The installation process is well explained by Blender's official extensions platform documentation:
