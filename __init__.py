@@ -2,13 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import bpy
 from bpy.utils import register_classes_factory
+from .bl_logger import logger
 
 
-def dprint(message: str):
-    """Prints in the system console if the addon's developer printing is ON"""
-    prefs = bpy.context.preferences.addons[__package__].preferences # type: ignore
-    if prefs.developer_print:
-        print(f"[Reset Props]: {message}")
+# def dprint(message: str):
+#     """Prints in the system console if the addon's developer printing is ON"""
+#     prefs = bpy.context.preferences.addons[__package__].preferences # type: ignore
+#     if prefs.developer_print:
+#         print(f"[Reset Props]: {message}")
 
 
 class ResetCustomPropertiesAddonPreferences(bpy.types.AddonPreferences):
@@ -62,7 +63,7 @@ class RESET_OT_custom_properties(bpy.types.Operator):
         props = []
         rna_ui = source.get("_RNA_UI", {})
 
-        dprint(f"Checking custom properties on '{source.name}'")
+        logger.debug("Checking custom properties on '%s'", source.name)
 
         for key in source.keys():
             # Skip "_RNA_UI" keys
@@ -74,23 +75,28 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                 ui_data = source.id_properties_ui(key)
                 if ui_data is not None:
                     props.append(key)
-                    dprint(f"    Found user property: '{key}' (via UI data)")
+                    logger.debug(
+                        "    Found user property: '%s' (via UI data)", key
+                    )
                     continue
             except (TypeError, AttributeError) as exception:
-                dprint(
+                logger.warning(
                     "    Modern method failed:\n"
-                    f"                   {exception}\n"
-                    "                   Fallback to _RNA_UI"
+                    "                   %s\n"
+                    "                   Fallback to _RNA_UI",
+                    exception
                     )
 
             # Fallback for Blender 4.2 or legacy data
             if key in rna_ui:
                 props.append(key)
-                dprint(f"    Found user property: '{key}' (via _RNA_UI)")
+                logger.info("    Found user property: '%s' (via _RNA_UI)", key)
             else:
-                dprint(f"    Skipped API-defined property (via _RNA_UI): '{key}'")
+                logger.debug(
+                    "    Skipped API-defined property (via _RNA_UI): '%s'", key
+                )
 
-        dprint(f"Total user properties found: {len(props)}")
+        logger.info("Total user properties found: %d", len(props))
         return props
 
     def execute(self, context): # type: ignore
@@ -119,7 +125,7 @@ class RESET_OT_custom_properties(bpy.types.Operator):
             if not properties:
                 continue
 
-            dprint(f"Processing properties on '{item.name}'")
+            logger.debug("Processing properties on '%s'", item.name)
 
             for prop_key in properties:
                 current_value = item[prop_key]
@@ -133,13 +139,19 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                     if hasattr(ui, "as_dict"):
                         ui_dict = ui.as_dict()
                         default_value = ui_dict.get("default")
-                        dprint(f"    Got default via as_dict(): {default_value}")
+                        logger.debug(
+                            "    Got default via as_dict(): %s",
+                            str(default_value)
+                        )
                     elif hasattr(ui, "default"):
                         default_value = ui.default
-                        dprint(f"    Got default via .default: {default_value}")
+                        logger.debug(
+                            "    Got default via .default: %s",
+                            str(default_value)
+                        )
 
                 except (TypeError, AttributeError):
-                    dprint("    Modern method failed, try fallback")
+                    logger.debug("    Modern method failed, try fallback")
 
                 # Fallback for Blender 4.2 or when modern method fails
                 if default_value is None:
@@ -147,17 +159,26 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                     prop_info = rna_ui.get(prop_key, {})
                     if "default" in prop_info:
                         default_value = prop_info["default"]
-                        dprint(f"    Got default via _RNA_UI: {default_value}")
+                        logger.debug(
+                            "    Got default via _RNA_UI: %s", default_value
+                        )
                     else:
-                        dprint(f"    No default found for '{prop_key}', skipping")
+                        logger.debug(
+                            "    No default found for '%s', skipping", prop_key
+                        )
                         continue
 
                 if current_value != default_value:
                     item[prop_key] = default_value
                     reset_props_count += 1
-                    dprint(f"    Reset '{prop_key}': {current_value} → {default_value}")
+                    logger.debug(
+                        "    Reset '%s': %s → %s",
+                        prop_key, current_value, default_value
+                    )
                 else:
-                    dprint(f"    '{prop_key}' already at default value")
+                    logger.debug(
+                        "    '%s' already at default value", prop_key
+                    )
 
         self.report({"INFO"}, f"Reset {reset_props_count} Custom Properties")
 
