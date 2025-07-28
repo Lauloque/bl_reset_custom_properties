@@ -1,17 +1,22 @@
+"""Reset custom properties to their default values on objects and pose bones."""
+# SPDX-License-Identifier: GPL-3.0-or-later
 import bpy
 from bpy.utils import register_classes_factory
+from typing import Set
+
 
 def dprint(message: str):
     """Prints in the system console if the addon's developer printing is ON"""
-    prefs = bpy.context.preferences.addons[__package__].preferences
+    prefs = bpy.context.preferences.addons[__package__].preferences # type: ignore
     if prefs.developer_print:
         print(f"[Reset Props]: {message}")
 
 
 class ResetCustomPropertiesAddonPreferences(bpy.types.AddonPreferences):
     """Addon preferences"""
-    bl_idname = __package__
-    
+
+    bl_idname = __package__ # type: ignore
+
     developer_print: bpy.props.BoolProperty(
         name="Enable Developer Log in System Console",
         description=(
@@ -19,37 +24,37 @@ class ResetCustomPropertiesAddonPreferences(bpy.types.AddonPreferences):
             "Please use this for any bug report.\n"
             "Keep it disabled for better performances."
         ),
-        default=False
-    )
-    
+        default=False,
+    )  # type: ignore
+
     def draw(self, context):
+        """Draws the addon preferences UI"""
         layout = self.layout
-        split = layout.split(factor=0.6)
         row = layout.row()
         row.prop(self, "developer_print")
         row.operator("wm.console_toggle", icon="CONSOLE", text="")
 
 
+# pylint: disable=invalid-name # Operator class names should be in uppercase
 class RESET_OT_custom_properties(bpy.types.Operator):
     """Reset custom properties to their default values"""
+
     bl_idname = "reset.custom_properties"
     bl_label = "Reset Custom Properties"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
     bl_description = "Reset custom properties to their default values"
-    
+
     selection_only: bpy.props.BoolProperty(
         name="Selection Only",
         description="Reset custom properties only on selected bones",
-        default=True
-    )
-    
+        default=True,
+    )  # type: ignore
+
     @classmethod
-    def poll(cls, context):
-        return(
-            context.selected_objects and
-            context.mode in ('OBJECT', 'POSE')
-        )
-    
+    def poll(cls, context): # type: ignore
+        """Operator availability check"""
+        return context.selected_objects and context.mode in ("OBJECT", "POSE")
+
     def list_custom_properties(self, source):
         """Make a list of user-defined custom properties from a source.
         Compatible with Blender 4.2+ by falling back to _RNA_UI if needed.
@@ -59,7 +64,7 @@ class RESET_OT_custom_properties(bpy.types.Operator):
 
         dprint(f"Checking custom properties on '{source.name}'")
 
-        for key, value in source.items():
+        for key in source.items():
             if key == "_RNA_UI":
                 continue
 
@@ -83,61 +88,62 @@ class RESET_OT_custom_properties(bpy.types.Operator):
 
         dprint(f"Total user properties found: {len(props)}")
         return props
-        
-    def execute(self, context):
+
+    def execute(self, context) -> Set[str]:
+        """Main execution"""
         reset_props_count = 0
-        
-        if context.mode == 'POSE':
+
+        if context.mode == "POSE":
             if self.selection_only:
                 selection = context.selected_pose_bones
             else:
                 armature = context.active_object
                 selection = armature.pose.bones
-                
+
             if not selection:
-                self.report({'WARNING'}, "No bones selected")
-                return {'CANCELLED'}
+                self.report({"WARNING"}, "No bones selected")
+                return {"CANCELLED"}
         else:
             selection = context.selected_objects
             if not selection:
-                self.report({'WARNING'}, "No objects selected")
-                return {'CANCELLED'}
-            
+                self.report({"WARNING"}, "No objects selected")
+                return {"CANCELLED"}
+
         for item in selection:
             properties = self.list_custom_properties(item)
-            
+
             if not properties:
                 continue
-            
+
             dprint(f"Processing properties on '{item.name}'")
-            
+
             for prop_key in properties:
                 current_value = item[prop_key]
                 default_value = None
-                
+
                 # Try modern Blender 4.4+ method first
                 try:
                     ui = item.id_properties_ui(prop_key)
-                    
+
                     # Try different ways to get the default value
-                    if hasattr(ui, 'as_dict'):
+                    if hasattr(ui, "as_dict"):
                         ui_dict = ui.as_dict()
-                        default_value = ui_dict.get('default')
+                        default_value = ui_dict.get("default")
                         dprint(f"    Got default via as_dict(): {default_value}")
-                    elif hasattr(ui, 'default'):
+                    elif hasattr(ui, "default"):
                         default_value = ui.default
                         dprint(f"    Got default via .default: {default_value}")
-                        
+
                 except (TypeError, AttributeError):
                     # Modern method failed, try fallback
                     pass
-                
+
                 # Fallback for Blender 4.2 or when modern method fails
                 if default_value is None:
-                    rna_ui = item.get('_RNA_UI', {})
+                    rna_ui = item.get("_RNA_UI", {})
                     prop_info = rna_ui.get(prop_key, {})
-                    if 'default' in prop_info:
-                        default_value = prop_info['default']
+                    if "default" in prop_info:
+                        default_value = prop_info["default"]
                         dprint(f"    Got default via _RNA_UI: {default_value}")
                     else:
                         dprint(f"    No default found for '{prop_key}', skipping")
@@ -150,56 +156,50 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                 else:
                     dprint(f"    '{prop_key}' already at default value")
 
-        self.report({'INFO'}, f"Reset {reset_props_count} Custom Properties")
-        
+        self.report({"INFO"}, f"Reset {reset_props_count} Custom Properties")
+
         # Force UI refresh to show updated values
         for area in bpy.context.screen.areas:
             area.tag_redraw()
-            
-        return {'FINISHED'}
 
 
 class VIEW3D_MT_pose_reset_custom_properties(bpy.types.Menu):
     """Submenu for custom properties in pose mode"""
+
     bl_label = "Reset Custom Properties"
     bl_idname = "VIEW3D_MT_pose_reset_custom_properties"
-    
+
     def draw(self, context):
+        """Custom menu drawing"""
         layout = self.layout
-        
+
         op = layout.operator(
-            "reset.custom_properties",
-            text = "Selected Bones",
-            icon = 'RESTRICT_SELECT_OFF'
+            "reset.custom_properties", text="Selected Bones", icon="RESTRICT_SELECT_OFF"
         )
         op.selection_only = True
-        
+
         op = layout.operator(
-            "reset.custom_properties",
-            text = "All Bones",
-            icon = 'ARMATURE_DATA'
+            "reset.custom_properties", text="All Bones", icon="ARMATURE_DATA"
         )
         op.selection_only = False
 
 
 def draw_menu_object(self, context):
     """Populates the object mode's menus"""
-    if context.mode == 'OBJECT':
+    if context.mode == "OBJECT":
         layout = self.layout
         layout.operator(
-            "reset.custom_properties",
-            text = "Custom Properties",
-            icon = 'RECOVER_LAST'
+            "reset.custom_properties", text="Custom Properties", icon="RECOVER_LAST"
         )
 
 
 def draw_menu_pose(self, context):
     """Populates the pose mode's menus"""
-    if context.mode == 'POSE':
+    if context.mode == "POSE":
         layout = self.layout
         layout.menu(
             "VIEW3D_MT_pose_reset_custom_properties",
-            icon = 'RECOVER_LAST',
+            icon="RECOVER_LAST",
         )
 
 
@@ -213,16 +213,17 @@ register_classes, unregister_classes = register_classes_factory(classes)
 
 
 def register():
+    """Register operator classs then gui"""
     register_classes()
-    
-    # Add menus
+
     bpy.types.VIEW3D_MT_object_clear.append(draw_menu_object)
     bpy.types.VIEW3D_MT_pose.prepend(draw_menu_pose)
 
 
 def unregister():
-    # Remove menus
+    """Unregister operator gui then classes"""
+
     bpy.types.VIEW3D_MT_object_clear.remove(draw_menu_object)
     bpy.types.VIEW3D_MT_pose.remove(draw_menu_pose)
-    
+
     unregister_classes()
