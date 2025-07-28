@@ -15,9 +15,10 @@ Adds convenient menu items in Object and Pose modes for quick property managemen
     ![menu object](Prez/menu_object.webp)
 
 - Menu _Pose_ &rang; _Reset Custom Properties_ &rang;  
-    - Selected Bones  
-    - All Bones  
-  ![menu object](Prez/menu_pose.webp)
+  
+  - Selected Bones  
+  - All Bones  
+    ![menu object](Prez/menu_pose.webp)
 
 ## Installation
 
