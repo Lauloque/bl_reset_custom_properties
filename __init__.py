@@ -28,6 +28,7 @@ class ResetCustomPropertiesAddonPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         """Draws the addon preferences UI"""
+        _ = context # satisfy linter, not used here
         layout = self.layout
         row = layout.row()
         row.prop(self, "developer_print")
@@ -63,7 +64,8 @@ class RESET_OT_custom_properties(bpy.types.Operator):
 
         dprint(f"Checking custom properties on '{source.name}'")
 
-        for key in source.items():
+        for key in source.keys():
+            # Skip "_RNA_UI" keys
             if key == "_RNA_UI":
                 continue
 
@@ -74,21 +76,24 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                     props.append(key)
                     dprint(f"    Found user property: '{key}' (via UI data)")
                     continue
-            except (TypeError, AttributeError):
-                # Method doesn't exist or failed - will try fallback
-                pass
+            except (TypeError, AttributeError) as exception:
+                dprint(
+                    "    Modern method failed:\n"
+                    f"                   {exception}\n"
+                    "                   Fallback to _RNA_UI"
+                    )
 
             # Fallback for Blender 4.2 or legacy data
             if key in rna_ui:
                 props.append(key)
                 dprint(f"    Found user property: '{key}' (via _RNA_UI)")
             else:
-                dprint(f"    Skipped API-defined property: '{key}'")
+                dprint(f"    Skipped API-defined property (via _RNA_UI): '{key}'")
 
         dprint(f"Total user properties found: {len(props)}")
         return props
 
-    def execute(self, context):
+    def execute(self, context): # type: ignore
         """Main execution"""
         reset_props_count = 0
 
@@ -97,7 +102,7 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                 selection = context.selected_pose_bones
             else:
                 armature = context.active_object
-                selection = armature.pose.bones
+                selection = armature.pose.bones # type: ignore
 
             if not selection:
                 self.report({"WARNING"}, "No bones selected")
@@ -134,8 +139,7 @@ class RESET_OT_custom_properties(bpy.types.Operator):
                         dprint(f"    Got default via .default: {default_value}")
 
                 except (TypeError, AttributeError):
-                    # Modern method failed, try fallback
-                    pass
+                    dprint("    Modern method failed, try fallback")
 
                 # Fallback for Blender 4.2 or when modern method fails
                 if default_value is None:
@@ -160,6 +164,15 @@ class RESET_OT_custom_properties(bpy.types.Operator):
         # Force UI refresh to show updated values
         for area in bpy.context.screen.areas:
             area.tag_redraw()
+        if context.mode == "POSE":
+            unique_armatures = {pb.id_data for pb in selection}
+            for armature in unique_armatures:
+                armature.update_tag()
+        else:
+            for obj in selection:
+                obj.update_tag() # type: ignore
+
+        return {"FINISHED"}
 
 
 class VIEW3D_MT_pose_reset_custom_properties(bpy.types.Menu):
@@ -170,17 +183,18 @@ class VIEW3D_MT_pose_reset_custom_properties(bpy.types.Menu):
 
     def draw(self, context):
         """Custom menu drawing"""
+        _ = context # satisfy linter, not used here
         layout = self.layout
 
         op = layout.operator(
             "reset.custom_properties", text="Selected Bones", icon="RESTRICT_SELECT_OFF"
         )
-        op.selection_only = True
+        op.selection_only = True # type: ignore
 
         op = layout.operator(
             "reset.custom_properties", text="All Bones", icon="ARMATURE_DATA"
         )
-        op.selection_only = False
+        op.selection_only = False # type: ignore
 
 
 def draw_menu_object(self, context):
